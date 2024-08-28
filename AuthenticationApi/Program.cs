@@ -13,6 +13,7 @@ var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
+builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
@@ -42,6 +43,7 @@ builder.Services.AddCors(options =>
 });
 
 builder.Services.AddAuthorization();
+
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.
@@ -56,10 +58,14 @@ app.UseAuthentication();
 app.UseAuthorization();
 app.UseCors("CorsPolicy");
 
+app.MapControllers();
+
 app.MapGet("/treasure", () => "Hurray, treasures!").RequireAuthorization();
 
-app.MapGet("/login", [AllowAnonymous] IResult (string email, string password) =>
+app.MapPost("/login", [AllowAnonymous] IResult ([FromBody] RequestUser requestUser) =>
     {
+        var (email, password) = requestUser;
+        Console.WriteLine($"Email: {email}, Password: {password}");
         if (email != "s" || password != "s") return Results.Unauthorized();
         var issuer = builder.Configuration["Jwt:Issuer"]!;
         var audience = builder.Configuration["Jwt:Audience"]!;
@@ -83,10 +89,9 @@ app.MapGet("/login", [AllowAnonymous] IResult (string email, string password) =>
         var jwtToken = tokenHandler.WriteToken(token);
         var stringToken = tokenHandler.WriteToken(token);
         return Results.Ok(stringToken);
-    })
-    .WithName("Login")
-    .WithOpenApi();
+    });
 
 app.Run("http://localhost:5000");
 
-record User(int Id, string Email, string Password);
+record User(string Id, string Email, string Password);
+record RequestUser(string Email, string Password);
