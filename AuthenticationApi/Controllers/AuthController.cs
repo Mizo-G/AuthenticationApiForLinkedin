@@ -41,17 +41,18 @@ public class AuthController : ControllerBase
         //here, we exchange the code for the token
         var token = await GetAccessToken(authorizationCode);
         if (token is null) return Unauthorized();
-        
+
         //then use the token to grab user info from linkedin
-        var user = await GetUserInformation(token);
+        //var user = await GetUserInformation(token);
         //what to return here, probably some exception occured
         //not found may not be the appropriate response
-        if (user is null) return NotFound();
-        
+        //if (user is null) return NotFound();
+
         //store in db if not exists or update the login counter
-       
+
         //return the token for storage in the user browser,
         //returning the user info here directly is also an option 
+        Console.WriteLine(token);
         return Ok(token);
         
         //or
@@ -70,24 +71,26 @@ public class AuthController : ControllerBase
         {
             { "grant_type", "authorization_code" },
             { "code", authorizationCode },
-            { "redirect_uri", "redirectUri" },
-            { "client_id", "clientId" },
-            { "client_secret", "clientSecret" }
+            { "redirect_uri", "http://localhost:5215" },
+            { "client_id", "77tgedfsh93yy3" },
+            { "client_secret", "1kUXuFiknbQrUEje" }
         });
         
         var response = await http.SendAsync(request);
         if (!response.IsSuccessStatusCode) return null;
-        
+         
         // the response is the token, assuming everything went well
         var content = await response.Content.ReadAsStringAsync();
+        Console.WriteLine(content);
+
         return content;
     }
 
-    private async Task<User?> GetUserInformation(string accessToken)
+    private async Task<string?> GetUserInformation(string accessToken)
     {
         //grab the url from linkedin docs
         var request = new HttpRequestMessage(HttpMethod.Get,
-            "https://api.linkedin.com/v2/me?projection=(id,firstName,lastName,profilePicture(displayImage~:playableStreams),emailAddress)");
+            "https://api.linkedin.com/v2/userinfo");
         
         request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", accessToken);
         
@@ -95,7 +98,7 @@ public class AuthController : ControllerBase
         if (!response.IsSuccessStatusCode) return null;
         
         var content = await response.Content.ReadAsStringAsync();
-        return JsonSerializer.Deserialize<User>(content);
+        return content;
         
     }
     
