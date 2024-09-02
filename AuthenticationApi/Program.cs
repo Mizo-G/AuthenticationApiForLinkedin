@@ -67,6 +67,7 @@ app.MapPost("/login", [AllowAnonymous] IResult ([FromBody] RequestUser requestUs
         var (email, password) = requestUser;
         Console.WriteLine($"Email: {email}, Password: {password}");
         if (email != "s" || password != "s") return Results.Unauthorized();
+        
         var issuer = builder.Configuration["Jwt:Issuer"]!;
         var audience = builder.Configuration["Jwt:Audience"]!;
         var key = Encoding.ASCII.GetBytes(builder.Configuration["Jwt:Key"]!);
@@ -78,7 +79,7 @@ app.MapPost("/login", [AllowAnonymous] IResult ([FromBody] RequestUser requestUs
             Audience = audience,
             SigningCredentials = new SigningCredentials(new SymmetricSecurityKey(key), SecurityAlgorithms.HmacSha256Signature),
             Subject = new ClaimsIdentity([
-                new Claim("Id", Guid.NewGuid().ToString()),
+                new Claim("id", Guid.NewGuid().ToString()),
                 new Claim(JwtRegisteredClaimNames.Sub, email),
                 new Claim(JwtRegisteredClaimNames.Email, email),
                 new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString())
@@ -86,7 +87,6 @@ app.MapPost("/login", [AllowAnonymous] IResult ([FromBody] RequestUser requestUs
         };
         var tokenHandler = new JwtSecurityTokenHandler();
         var token = tokenHandler.CreateToken(tokenDescriptor);
-        var jwtToken = tokenHandler.WriteToken(token);
         var stringToken = tokenHandler.WriteToken(token);
         return Results.Ok(stringToken);
     });
