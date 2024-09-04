@@ -86,19 +86,20 @@ public class AuthController : ControllerBase
         return content;
     }
 
-    private async Task<string?> GetUserInformation(string accessToken)
+    [HttpPost("userinfo")]
+    public async Task<IActionResult> GetUserInformation([FromBody] string accessToken)
     {
-        //grab the url from linkedin docs
         var request = new HttpRequestMessage(HttpMethod.Get,
             "https://api.linkedin.com/v2/userinfo");
         
         request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", accessToken);
         
         var response = await http.SendAsync(request);
-        if (!response.IsSuccessStatusCode) return null;
+        if (!response.IsSuccessStatusCode) return Unauthorized("resoponse returned: " + response.StatusCode);
         
         var content = await response.Content.ReadAsStringAsync();
-        return content;
+        Console.WriteLine(content);
+        return Ok(content);
         
     }
     

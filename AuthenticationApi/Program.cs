@@ -80,8 +80,9 @@ app.MapPost("/login", [AllowAnonymous] IResult ([FromBody] RequestUser requestUs
             SigningCredentials = new SigningCredentials(new SymmetricSecurityKey(key), SecurityAlgorithms.HmacSha256Signature),
             Subject = new ClaimsIdentity([
                 new Claim("id", Guid.NewGuid().ToString()),
-                new Claim(JwtRegisteredClaimNames.Sub, email),
-                new Claim(JwtRegisteredClaimNames.Email, email),
+                new Claim(JwtRegisteredClaimNames.Sub, "email@valid.com"),
+                new Claim(JwtRegisteredClaimNames.Email, "email@valid.com"),
+                new Claim(JwtRegisteredClaimNames.Name, "joe exotic"),
                 new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString())
             ])
         };
